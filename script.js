@@ -28,12 +28,13 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById('btn-quiz-dificil').addEventListener('click', () => mudarNivelQuiz('dificil'));
     document.getElementById('btn-next-question').addEventListener('click', proximaQuestao);
 
-    // 5. Eventos de Mídia
+    // 5. Eventos de Mídia e Referências
     document.getElementById('btn-midia-pdf').addEventListener('click', () => abrirMidia('pdf'));
     document.getElementById('btn-midia-video').addEventListener('click', () => abrirMidia('video'));
     document.getElementById('btn-fechar-midia').addEventListener('click', fecharMidia);
+    document.getElementById('btn-referencias').addEventListener('click', mostrarReferencias); // NOVO BOTAO
 
-    // 6. Eventos do Jogo da Memória e Modais
+    // 6. Eventos do Jogo da Memória e Modais globais
     document.getElementById('btn-reiniciar-jogo').addEventListener('click', inicializarJogo);
     document.getElementById('btn-fechar-modal').addEventListener('click', ocultarModal);
     document.getElementById('global-modal-overlay').addEventListener('click', fecharModalPorCliqueFora);
@@ -178,7 +179,7 @@ function fecharModalPorCliqueFora(e) {
 }
 
 // ==========================================================================
-// 3. QUIZ DE FIXAÇÃO CONTINUADA (Ajustado para uso de Classes CSS)
+// 3. QUIZ DE FIXAÇÃO CONTINUADA (Atualizado com Certificado e Progressão)
 // ==========================================================================
 const databaseQuestoes = {
     facil: [
@@ -226,7 +227,9 @@ let totalAcertosQuiz = 0;
 function mudarNivelQuiz(novoNivel) {
     nivelQuizAtual = novoNivel;
     indiceQuestaoAtual = 0;
-    totalAcertosQuiz = 0;
+    
+    // Zera os acertos se for recomeçar do Fácil, mantém a soma se estiver progredindo
+    if(novoNivel === 'facil') totalAcertosQuiz = 0;
 
     document.getElementById('lbl-nivel-atual').innerText = novoNivel;
     document.getElementById('btn-next-question').disabled = true;
@@ -251,7 +254,7 @@ function renderizarQuestaoQuiz() {
     dadosQuestao.o.forEach((opcao, indice) => {
         const btn = document.createElement('button');
         btn.innerText = opcao;
-        btn.className = "quiz-option-btn"; // Usando classe no lugar de style inline
+        btn.className = "quiz-option-btn"; 
         
         btn.addEventListener('click', () => checarRespostaQuiz(indice, btn));
         caixaOpcoes.appendChild(btn);
@@ -293,15 +296,70 @@ function proximaQuestao() {
     if (indiceQuestaoAtual < listaQuestoes.length) {
         renderizarQuestaoQuiz();
     } else {
-        alert(`🎉 Concluído! Você acertou ${totalAcertosQuiz} de ${listaQuestoes.length} questões no nível ${nivelQuizAtual.toUpperCase()}.`);
-        document.getElementById('metric-quiz').innerText = `${totalAcertosQuiz}/30 (Nível ${nivelQuizAtual})`;
-        indiceQuestaoAtual = 0;
-        renderizarQuestaoQuiz();
+        finalizarNivelQuiz();
     }
 }
 
+function finalizarNivelQuiz() {
+    let proxNivel = '';
+    let titulo = '';
+    let msg = '';
+
+    if (nivelQuizAtual === 'facil') {
+        proxNivel = 'medio';
+        titulo = "🌱 Nível Fácil Concluído!";
+        msg = `Você terminou o nível inicial com ${totalAcertosQuiz} acertos. Deseja avançar para o nível Médio?`;
+    } else if (nivelQuizAtual === 'medio') {
+        proxNivel = 'dificil';
+        titulo = "🌿 Nível Médio Concluído!";
+        msg = `Excelente desempenho! Você está com ${totalAcertosQuiz} acertos. Deseja encarar o Desafio Final (Difícil)?`;
+    } else {
+        gerarCertificado();
+        return;
+    }
+
+    const modalHtml = `
+        <div class="text-center-box">
+            <h2 class="modal-titulo">${titulo}</h2>
+            <p>${msg}</p>
+            <div class="btn-gap">
+                <button id="btn-avancar-nivel" class="btn-primary">Avançar Nível ➡️</button>
+                <button id="btn-ficar-nivel" class="btn-secondary">Ficar Aqui</button>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('modal-content-injector').innerHTML = modalHtml;
+    document.getElementById('global-modal-overlay').classList.remove('hidden');
+
+    document.getElementById('btn-avancar-nivel').addEventListener('click', () => {
+        mudarNivelQuiz(proxNivel);
+        ocultarModal();
+    });
+    document.getElementById('btn-ficar-nivel').addEventListener('click', ocultarModal);
+}
+
+function gerarCertificado() {
+    document.getElementById('metric-quiz').innerText = `${totalAcertosQuiz}/30 (Completo)`;
+    
+    const modalHtml = `
+        <div class="certificado-box">
+            <h1 class="certificado-titulo">🏆 Certificado de Excelência 🏆</h1>
+            <h3 class="certificado-subtitulo">Especialista em Agroecologia</h3>
+            <p class="certificado-texto">Certificamos que o <strong>Aluno(a) Online</strong> concluiu todos os módulos de avaliação de fixação continuada do projeto <em>Raízes do Amanhã</em> com notório saber prático e teórico.</p>
+            <p class="certificado-rodape">Programa Agrinho 2026 | Categoria Programação</p>
+            <button id="btn-fechar-certificado" class="btn-primary">Fechar Certificado</button>
+        </div>
+    `;
+    
+    document.getElementById('modal-content-injector').innerHTML = modalHtml;
+    document.getElementById('global-modal-overlay').classList.remove('hidden');
+    
+    document.getElementById('btn-fechar-certificado').addEventListener('click', ocultarModal);
+}
+
 // ==========================================================================
-// 4. CENTRAL DE MÍDIAS INTEGRADA
+// 4. CENTRAL DE MÍDIAS INTEGRADA E REFERÊNCIAS
 // ==========================================================================
 function abrirMidia(tipoMidia) {
     const container = document.getElementById('media-viewport-container');
@@ -328,6 +386,29 @@ function fecharMidia() {
     const box = document.getElementById('media-frame-box');
     container.classList.add('hidden');
     box.innerHTML = "";
+}
+
+function mostrarReferencias() {
+    const modalHtml = `
+        <div>
+            <h2 class="modal-titulo">📚 Referências Bibliográficas</h2>
+            <hr>
+            <ul class="referencias-lista">
+                <li><strong>Sistema FAEP/SENAR-PR:</strong> Diretrizes e manuais pedagógicos do Programa Agrinho 2026.</li>
+                <li><strong>EMBRAPA:</strong> Acervo científico sobre o Sistema de Plantio Direto (SPD) e Manejo Integrado de Pragas (MIP).</li>
+                <li><strong>UFPR:</strong> Acervo Digital - Livro Técnico "Conservando os Solos".</li>
+                <li><strong>IBGE:</strong> Censo Agropecuário e indicadores de sustentabilidade na agricultura familiar.</li>
+            </ul>
+            <div class="btn-gap">
+                <button id="btn-fechar-ref" class="btn-secondary">Fechar</button>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('modal-content-injector').innerHTML = modalHtml;
+    document.getElementById('global-modal-overlay').classList.remove('hidden');
+    
+    document.getElementById('btn-fechar-ref').addEventListener('click', ocultarModal);
 }
 
 // ==========================================================================

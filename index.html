@@ -263,6 +263,8 @@ Nível Selecionado: <span id="lbl-nivel-atual" class="text-uppercase">Fácil</sp
 <div class="midia-btn-box">
 <button id="btn-midia-pdf" class="btn-primary">📄 Abrir Cartilha do Solo (UFPR)</button>
 <button id="btn-midia-video" class="btn-primary">🎥 Assistir Videoaula Prática (Nascentes)</button>
+<!-- ADICIONE ESTA LINHA ABAIXO -->
+    <button id="btn-referencias" class="btn-secondary">📚 Referências Bibliográficas</button>
 </div>
 
 <div id="media-viewport-container" class="midia-container hidden">
@@ -321,12 +323,13 @@ Nível Selecionado: <span id="lbl-nivel-atual" class="text-uppercase">Fácil</sp
 </main>
 </div>
 
-<div id="global-modal-overlay" class="modal-backdrop hidden">
-<div class="modal-box-body">
-<button id="btn-fechar-modal" class="modal-btn-x">✕</button>
-<div id="modal-content-injector">
-</div>
-</div>
+<!-- Modal Overlay Global (deve estar no final do seu body) -->
+<div id="global-modal-overlay" class="hidden">
+    <div class="modal-box">
+        <button id="btn-fechar-modal">X</button>
+        <!-- O SCRIPT VAI INJETAR O CONTEÚDO AQUI DENTRO -->
+        <div id="modal-content-injector"></div>
+    </div>
 </div>
 
 <script src="script.js"></script>
